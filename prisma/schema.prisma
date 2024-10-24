@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model asset_google_maps {
+  id                   Int       @id @default(autoincrement())
+  id_unit              Int?      @db.SmallInt
+  email_account_bisnis String?   @db.VarChar(32)
+  unit_bisnis          String?   @db.VarChar(50)
+  url_google_maps      String?   @db.VarChar(255)
+  no_telp_publish      String?   @db.VarChar(255)
+  link_wa              String?   @db.VarChar(255)
+  status               String?   @db.VarChar(255)
+  created_at           DateTime? @db.Timestamp(6)
+  updated_at           DateTime? @updatedAt @db.Timestamp(6)
+}
+
+model asset_medsos {
+  id             Int       @id @default(autoincrement())
+  id_unit        Int?
+  id_sekretariat Int?
+  no_telepon     String?   @db.VarChar(25)
+  nama_akun      String?   @db.VarChar(25)
+  username       String?   @db.VarChar(25)
+  password       String?   @db.VarChar(25)
+  url_akun       String?   @db.VarChar(25)
+  email_akun     String?   @db.VarChar(25)
+  status         String?   @db.VarChar(25)
+  notes          String?   @db.VarChar(255)
+  created_at     DateTime? @db.Timestamp(6)
+  updated_at     DateTime? @updatedAt @db.Timestamp(6)
+}
+
+model asset_telepon {
+  id                Int       @id @default(autoincrement())
+  id_unit           Int?      @db.SmallInt
+  no_telepon        String?   @db.VarChar(32)
+  provider          String?   @db.VarChar(50)
+  tanggal_aktif     DateTime? @db.Date
+  tanggal_non_aktif DateTime? @db.Date
+  penanggung_jawab  String?   @db.VarChar(255)
+  is_published      String?   @db.VarChar(255)
+  created_at        DateTime? @db.Timestamp(6)
+  updated_at        DateTime? @updatedAt @db.Timestamp(6)
+  id_sekretariat    String?   @db.VarChar(255)
+}
+
+model master_kota_go {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(6)
+  updated_at DateTime? @updatedAt @db.Timestamp(6)
+  id_cabang  Int?      @db.SmallInt
+}
+
+model master_platform {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(6)
+  updated_at DateTime? @updatedAt @db.Timestamp(6)
+}
+
+model master_unit_pj {
+  id             Int       @id @default(autoincrement())
+  id_unit        Int?      @db.SmallInt
+  pj_pusat       Int?      @db.SmallInt
+  id_cabang      Int?      @db.SmallInt
+  cabang         String?   @db.VarChar(255)
+  id_kota        Int?      @db.SmallInt
+  kota           String?   @db.VarChar(255)
+  unit           String?   @db.VarChar(255)
+  nama_gedung    String?   @db.VarChar(255)
+  is_sekretariat String?   @db.VarChar(255)
+  id_pj_cabang   String?   @db.VarChar(255)
+  nama_pj_cabang String?   @db.VarChar(255)
+  updated_at     DateTime? @updatedAt @db.Timestamp(6)
+  created_at     DateTime? @db.Timestamp(6)
+  alamat         String?   @db.VarChar(255)
+}
+
+model produktivitas_digital {
+  id                 Int       @id @default(autoincrement())
+  id_kota            Int?      @db.SmallInt
+  id_unit            Int?      @db.SmallInt
+  id_platform        Int?      @db.SmallInt
+  link_produktivitas String?   @db.VarChar(255)
+  id_user_input      String?   @db.VarChar(255)
+  tanggal_input      DateTime? @db.Date
+  is_approved        Boolean?
+  id_user_verify     Int?      @db.SmallInt
+  tanggal_verify     DateTime? @db.Timestamp(6)
+  created_at         DateTime? @db.Timestamp(6)
+  updated_at         DateTime? @updatedAt @db.Timestamp(6)
+}
+
+model master_pj_cabang {
+  id    Int     @id
+  nama  String? @db.VarChar(255)
+  email String? @db.VarChar(255)
+  telp  String? @db.VarChar(255)
+}
+
+model master_pj_pusat {
+  id    Int     @id
+  nama  String  @db.VarChar(255)
+  email String? @db.VarChar(255)
+  telp  String  @db.VarChar(255)
+}
+
+enum Role {
+  pj_cabang
+  admin
+  pj_pusat
+}
+
+model User {
+  id           String     @id @default(uuid())
+  nama         String     @db.VarChar(255)
+  nik          String     @unique @db.VarChar(255)
+  no_tlp       String     @db.VarChar(255)
+  password     String     @db.VarChar(255)
+  role         Role       @default(pj_cabang)
+  id_pj_cabang String?    @db.VarChar(255)
+  menuGroupId  String?    @map("menu_group_id") // Add this field
+  menuGroup    MenuGroup? @relation(fields: [menuGroupId], references: [id]) // Add this relation
+  // Timestamps
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model MenuGroup {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  slug        String  @unique
+  role        Role    @default(pj_cabang) // Add role field to associate with user roles
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Relation to menu items
+  menuItems MenuItem[]
+  users     User[] // Add this relation
+  // Timestamps
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("menu_groups")
+}
+
+model MenuItem {
+  id    String  @id @default(uuid())
+  title String
+  href  String?
+  icon  String?
+  label String
+
+  // Self-referential relationship for nested menu items
+  parentId String?    @map("parent_id")
+  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuItem[] @relation("MenuItemChildren")
+
+  // Relation to menu group
+  groupId String    @map("group_id")
+  group   MenuGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  // Ordering field
+  order Int @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("menu_items")
+}
